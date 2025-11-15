@@ -119,13 +119,13 @@ After deployment, verify:
 
 2. **Check GitHub Repositories**:
    ```
-   https://github.com/CloudbrokerAz
+   https://github.com/hashi-demo-lab
    ```
    Should see: tfc-finance-bu-stack, tfc-engineering-bu-stack, tfc-sales-bu-stack
 
 3. **Check Seeded Files**:
    ```bash
-   gh repo view CloudbrokerAz/tfc-finance-bu-stack
+   gh repo view hashi-demo-lab/tfc-finance-bu-stack
    ```
 
 4. **Check Stack Outputs**:
@@ -144,7 +144,7 @@ bu_infrastructure = {
     project_name     = "BU_finance"
     team_id          = "team-xxxxx"
     github_repo_name = "tfc-finance-bu-stack"
-    github_repo_url  = "https://github.com/CloudbrokerAz/tfc-finance-bu-stack"
+    github_repo_url  = "https://github.com/hashi-demo-lab/tfc-finance-bu-stack"
     # ... more fields
   }
   # engineering and sales similar
