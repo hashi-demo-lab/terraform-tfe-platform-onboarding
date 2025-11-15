@@ -1,0 +1,73 @@
+# Engineering Business Unit Configuration
+# This YAML file defines consumer projects for the Engineering BU
+
+business_unit: engineering
+
+projects:
+  - name: platform-services
+    description: Core platform infrastructure and shared services
+    var_sets:
+      variables:
+        - key: environment
+          value: production
+        - key: team
+          value: platform-team
+        - key: aws_region
+          value: us-east-1
+        - key: kubernetes_version
+          value: "1.28"
+          description: EKS cluster version
+        - key: enable_monitoring
+          value: "true"
+          hcl: true
+
+  - name: developer-tools
+    description: CI/CD and developer productivity tools
+    var_sets:
+      variables:
+        - key: environment
+          value: shared
+        - key: team
+          value: devtools-team
+        - key: github_org
+          value: CloudbrokerAz
+        - key: enable_runner_autoscaling
+          value: "true"
+          hcl: true
+        - key: runner_instance_types
+          value: '["t3.medium", "t3.large"]'
+          hcl: true
+          description: EC2 instance types for GitHub Actions runners
+
+  - name: api-gateway
+    description: API gateway and service mesh infrastructure
+    var_sets:
+      variables:
+        - key: environment
+          value: production
+        - key: team
+          value: api-team
+        - key: aws_region
+          value: us-east-1
+        - key: rate_limit_enabled
+          value: "true"
+          hcl: true
+        - key: rate_limit_per_second
+          value: "1000"
+          description: API rate limit
+
+  - name: data-platform
+    description: Data lake and analytics infrastructure
+    var_sets:
+      variables:
+        - key: environment
+          value: production
+        - key: team
+          value: data-team
+        - key: aws_region
+          value: us-west-2
+        - key: storage_tier
+          value: intelligent-tiering
+        - key: enable_encryption
+          value: "true"
+          hcl: true

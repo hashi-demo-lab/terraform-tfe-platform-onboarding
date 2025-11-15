@@ -1,0 +1,78 @@
+# Sales Business Unit Configuration
+# This YAML file defines consumer projects for the Sales BU
+
+business_unit: sales
+
+projects:
+  - name: crm-platform
+    description: Customer Relationship Management platform
+    var_sets:
+      variables:
+        - key: environment
+          value: production
+        - key: team
+          value: sales-crm
+        - key: aws_region
+          value: us-east-1
+        - key: database_size
+          value: db.r6g.xlarge
+          description: RDS instance class
+        - key: enable_read_replicas
+          value: "true"
+          hcl: true
+        - key: replica_count
+          value: "2"
+
+  - name: analytics-pipeline
+    description: Sales analytics and business intelligence
+    var_sets:
+      variables:
+        - key: environment
+          value: production
+        - key: team
+          value: sales-analytics
+        - key: aws_region
+          value: us-west-2
+        - key: data_warehouse
+          value: redshift
+        - key: enable_real_time_sync
+          value: "true"
+          hcl: true
+        - key: sync_interval_minutes
+          value: "15"
+
+  - name: sales-portal
+    description: Customer-facing sales portal and e-commerce
+    var_sets:
+      variables:
+        - key: environment
+          value: production
+        - key: team
+          value: sales-portal
+        - key: aws_region
+          value: us-east-1
+        - key: cdn_enabled
+          value: "true"
+          hcl: true
+        - key: waf_enabled
+          value: "true"
+          hcl: true
+          description: Web Application Firewall
+
+  - name: lead-management
+    description: Lead generation and tracking systems
+    var_sets:
+      variables:
+        - key: environment
+          value: production
+        - key: team
+          value: sales-leads
+        - key: aws_region
+          value: us-east-1
+        - key: enable_ai_scoring
+          value: "true"
+          hcl: true
+          description: AI-powered lead scoring
+        - key: integration_endpoints
+          value: '["salesforce", "hubspot", "marketo"]'
+          hcl: true

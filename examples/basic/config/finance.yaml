@@ -1,0 +1,17 @@
+business_unit: finance
+
+projects:
+  - name: web-app
+    description: Finance web application infrastructure
+    
+    var_sets:
+      variables:
+        - key: environment
+          value: production
+          category: terraform
+          description: Environment identifier
+        
+        - key: team
+          value: finance
+          category: terraform
+          description: Team identifier
