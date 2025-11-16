@@ -85,7 +85,7 @@ output "bu_stack_deployment_names" {
   description = "Map of BU names to their Stack deployment names (populated after first run)"
   value = var.create_hcp_stacks ? {
     for bu, stack in tfe_stack.bu_control :
-    bu => stack.deployment_names
+    bu => try(stack.deployment_names, [])
   } : {}
 }
 
@@ -155,6 +155,8 @@ output "bu_infrastructure" {
       # Stack or Workspace (depending on configuration)
       stack_id         = var.create_hcp_stacks ? tfe_stack.bu_control[bu].id : null
       stack_name       = var.create_hcp_stacks ? tfe_stack.bu_control[bu].name : null
+      workspace_id     = null  # Legacy field - no longer used with Stacks
+      workspace_name   = null  # Legacy field - no longer used with Stacks
       
       # GitHub Resources (if created)
       github_repo_name = var.create_bu_repositories ? github_repository.bu_stack[bu].name : null
@@ -185,6 +187,7 @@ output "deployment_summary" {
     consumer_projects_count      = length(tfe_project.consumer)
     bu_teams_count               = length(tfe_team.bu_admin)
     bu_stacks_count              = var.create_hcp_stacks ? length(tfe_stack.bu_control) : 0
+    bu_workspaces_count          = 0  # Legacy field - no longer used with Stacks
     github_repos_created         = var.create_bu_repositories ? length(github_repository.bu_stack) : 0
     github_teams_created         = var.create_bu_repositories ? length(github_team.bu_admin) : 0
   }
