@@ -59,44 +59,28 @@ This module is designed for the **Terraform Stacks linked stacks pattern** with 
 
 ```mermaid
 graph TB
-    subgraph "Platform Stack (Platform_Team project)"
-        PS[platform-onboarding module]
-        PS --> PE[Deployment: platform-engineering]
-        PS --> SO[Deployment: security-ops]
-        PS --> CI[Deployment: cloud-infrastructure]
+    subgraph PS["Platform Stack (Platform_Team)"]
+        MOD[platform-onboarding module]
+        MOD --> D1[platform-engineering]
+        MOD --> D2[security-ops]
+        MOD --> D3[cloud-infrastructure]
     end
     
-    subgraph "Platform Engineering Resources"
-        PE --> PE_PROJ[BU_platform-engineering project]
-        PE --> PE_TEAM[platform-engineering_admin team]
-        PE --> PE_REPOS["GitHub: tfc-platform-engineering-bu-stack"]
-        PE --> PE_CONSUMER1[plat-eng_kubernetes-platform]
-        PE --> PE_CONSUMER2[plat-eng_service-mesh]
-        PE --> PE_CONSUMER3[plat-eng_ci-cd-platform]
-    end
+    D1 --> PE["Platform Engineering<br/>• Control Project<br/>• Admin Team<br/>• 3 Consumer Projects<br/>• GitHub Repo"]
+    D2 --> SO["Security Operations<br/>• Control Project<br/>• Admin Team<br/>• 4 Consumer Projects<br/>• GitHub Repo"]
+    D3 --> CI["Cloud Infrastructure<br/>• Control Project<br/>• Admin Team<br/>• 4 Consumer Projects<br/>• GitHub Repo"]
     
-    subgraph "Security Operations Resources"
-        SO --> SO_PROJ[BU_security-ops project]
-        SO --> SO_TEAM[security-ops_admin team]
-        SO --> SO_REPOS["GitHub: tfc-security-ops-bu-stack"]
-        SO --> SO_CONSUMER1[sec-ops_siem-platform]
-        SO --> SO_CONSUMER2[sec-ops_vulnerability-scanning]
-        SO --> SO_CONSUMER3[sec-ops_identity-access-management]
-    end
+    PE -.publish_output.-> PE_BU[Platform Engineering<br/>BU Stack]
+    SO -.publish_output.-> SO_BU[Security Operations<br/>BU Stack]
+    CI -.publish_output.-> CI_BU[Cloud Infrastructure<br/>BU Stack]
     
-    subgraph "Cloud Infrastructure Resources"
-        CI --> CI_PROJ[BU_cloud-infrastructure project]
-        CI --> CI_TEAM[cloud-infrastructure_admin team]
-        CI --> CI_REPOS["GitHub: tfc-cloud-infrastructure-bu-stack"]
-        CI --> CI_CONSUMER1[cloud-infra_network-backbone]
-        CI --> CI_CONSUMER2[cloud-infra_compute-resources]
-        CI --> CI_CONSUMER3[cloud-infra_storage-services]
-    end
-    
-    style PS fill:#7B42BC
-    style PE fill:#60A5FA
-    style SO fill:#F59E0B
-    style CI fill:#10B981
+    style PS fill:#7B42BC,color:#fff
+    style PE fill:#60A5FA,color:#000
+    style SO fill:#F59E0B,color:#000
+    style CI fill:#10B981,color:#000
+    style PE_BU fill:#BFDBFE,color:#000
+    style SO_BU fill:#FED7AA,color:#000
+    style CI_BU fill:#A7F3D0,color:#000
 ```
 
 ### How It Works
