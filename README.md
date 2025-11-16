@@ -67,20 +67,24 @@ This module is designed for the **Terraform Stacks linked stacks pattern** with 
 
 ```mermaid
 graph TB
-    subgraph PS["Platform Stack (Platform_Team)"]
-        MOD[platform-onboarding module]
-        MOD --> D1[deployment: platform-engineering]
-        MOD --> D2[deployment: security-ops]
-        MOD --> D3[deployment: cloud-infrastructure]
+    subgraph PS["Platform Stack<br/>(Platform_Team Project)"]
+        MOD["platform-onboarding<br/>module"]
+        MOD --> D1["Deployment:<br/>platform-engineering"]
+        MOD --> D2["Deployment:<br/>security-ops"]
+        MOD --> D3["Deployment:<br/>cloud-infrastructure"]
     end
     
-    D1 --> PE["Platform Engineering<br/>• Control Project (BU_platform-engineering)<br/>• Admin Team & Token<br/>• Consumer Projects (3)<br/>• GitHub Repo Created<br/>• HCP Stack Created & VCS-Connected"]
-    D2 --> SO["Security Operations<br/>• Control Project (BU_security-ops)<br/>• Admin Team & Token<br/>• Consumer Projects (4)<br/>• GitHub Repo Created<br/>• HCP Stack Created & VCS-Connected"]
-    D3 --> CI["Cloud Infrastructure<br/>• Control Project (BU_cloud-infrastructure)<br/>• Admin Team & Token<br/>• Consumer Projects (4)<br/>• GitHub Repo Created<br/>• HCP Stack Created & VCS-Connected"]
+    D1 --> PE["Platform Engineering BU<br/>━━━━━━━━━━━━━━━━━━━<br/>• Control Project: BU_platform-engineering<br/>• Admin Team: platform-engineering_admin<br/>• Consumer Projects: 3<br/>• GitHub Repo: tfc-platform-engineering-bu-stack<br/>• HCP Stack: platform-engineering-bu-stack<br/>• VCS-Connected: ✓"]
     
-    PE -.publish_output<br/>project_id, stack_id.-> PE_BU["Platform Engineering BU Stack<br/>(VCS-connected to GitHub)<br/>• Runs on commits<br/>• Creates workspaces"]
-    SO -.publish_output<br/>project_id, stack_id.-> SO_BU["Security Operations BU Stack<br/>(VCS-connected to GitHub)<br/>• Runs on commits<br/>• Creates workspaces"]
-    CI -.publish_output<br/>project_id, stack_id.-> CI_BU["Cloud Infrastructure BU Stack<br/>(VCS-connected to GitHub)<br/>• Runs on commits<br/>• Creates workspaces"]
+    D2 --> SO["Security Operations BU<br/>━━━━━━━━━━━━━━━━━━━<br/>• Control Project: BU_security-ops<br/>• Admin Team: security-ops_admin<br/>• Consumer Projects: 4<br/>• GitHub Repo: tfc-security-ops-bu-stack<br/>• HCP Stack: security-ops-bu-stack<br/>• VCS-Connected: ✓"]
+    
+    D3 --> CI["Cloud Infrastructure BU<br/>━━━━━━━━━━━━━━━━━━━<br/>• Control Project: BU_cloud-infrastructure<br/>• Admin Team: cloud-infrastructure_admin<br/>• Consumer Projects: 4<br/>• GitHub Repo: tfc-cloud-infrastructure-bu-stack<br/>• HCP Stack: cloud-infrastructure-bu-stack<br/>• VCS-Connected: ✓"]
+    
+    PE -.publish_output<br/>project_id, stack_id, token.-> PE_BU["Platform Engineering<br/>BU Stack<br/>━━━━━━━━━━━━━━<br/>VCS: GitHub<br/>Auto-run: ✓<br/>Creates: Workspaces"]
+    
+    SO -.publish_output<br/>project_id, stack_id, token.-> SO_BU["Security Operations<br/>BU Stack<br/>━━━━━━━━━━━━━━<br/>VCS: GitHub<br/>Auto-run: ✓<br/>Creates: Workspaces"]
+    
+    CI -.publish_output<br/>project_id, stack_id, token.-> CI_BU["Cloud Infrastructure<br/>BU Stack<br/>━━━━━━━━━━━━━━<br/>VCS: GitHub<br/>Auto-run: ✓<br/>Creates: Workspaces"]
     
     style PS fill:#7B42BC,color:#fff
     style PE fill:#60A5FA,color:#000
@@ -95,9 +99,14 @@ graph TB
 
 1. **Platform Stack** runs in the `Platform_Team` project with 3 deployments (one per IT team)
 2. Each deployment provides YAML configuration content with team-specific consumer projects
-3. Module creates control project, admin team, and consumer projects for each IT team
-4. Module seeds GitHub repositories with complete Stack configurations
-5. IT teams can then manage their own workspaces using the BU Stack repositories
+3. Module creates:
+   - Control project for each BU (e.g., `BU_platform-engineering`)
+   - Admin team with token (e.g., `platform-engineering_admin`)
+   - Consumer projects from YAML configuration
+   - GitHub repository with seeded Stack configuration files
+   - **HCP Terraform Stack** VCS-connected to the GitHub repository
+4. BU Stacks auto-run when teams push changes to their GitHub repositories
+5. BU teams manage their own workspaces through the BU Stack (bu-onboarding module)
 
 ### Linked Stacks Pattern
 
@@ -485,7 +494,7 @@ If a business unit isn't in the abbreviation map, the first 11 characters are us
 
 ## Template Files
 
-The module seeds 8 files in each BU repository:
+The module seeds 9 files in each BU repository:
 
 1. **README.md** - BU-specific documentation with team context
 2. **variables.tfcomponent.hcl** - Stack variables (upstream inputs, YAML config)
@@ -495,6 +504,7 @@ The module seeds 8 files in each BU repository:
 6. **deployments.tfdeploy.hcl** - Dev/staging/prod deployments with upstream_input from platform stack
 7. **configs/{bu_name}.yaml** - Example workspace configuration for the team
 8. **.github/workflows/terraform-stacks.yml** - CI/CD workflow for Stack operations
+9. **.terraform-version** - Terraform version specification (1.13.5+)
 
 Each file is customized with the BU's name, project ID, and token references.
 
