@@ -62,10 +62,18 @@ resource "tfe_stack" "bu_control" {
     oauth_token_id = var.vcs_oauth_token_id
   }
   
-  depends_on = [
+  # Only depend on GitHub resources if they're being created
+  depends_on = var.create_bu_repositories ? [
     github_repository.bu_stack,
-    github_repository_file.bu_stack_files
-  ]
+    github_repository_file.readme,
+    github_repository_file.variables,
+    github_repository_file.providers,
+    github_repository_file.components,
+    github_repository_file.outputs,
+    github_repository_file.deployments,
+    github_repository_file.yaml_config,
+    github_repository_file.github_actions
+  ] : []
 }
 
 # ============================================================================
