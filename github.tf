@@ -225,3 +225,17 @@ resource "github_repository_file" "github_actions" {
   commit_email        = var.commit_author_email
   overwrite_on_create = true
 }
+
+# .terraform-version file
+resource "github_repository_file" "terraform_version" {
+  for_each = var.create_bu_repositories ? local.tenant : {}
+
+  repository          = github_repository.bu_stack[each.key].name
+  branch              = "main"
+  file                = ".terraform-version"
+  content             = file("${path.module}/templates/.terraform-version.tpl")
+  commit_message      = "Add Terraform version specification"
+  commit_author       = var.commit_author_name
+  commit_email        = var.commit_author_email
+  overwrite_on_create = true
+}
