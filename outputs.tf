@@ -17,18 +17,18 @@ output "business_units" {
 # ============================================================================
 
 output "bu_project_ids_map" {
-  description = "Map of BU names to control project IDs for upstream consumption"
+  description = "Map of BU names to Platform project ID (all BU Stacks share Platform_Team project due to Stacks RBAC limitation)"
   value = {
     for bu, config in local.tenant : 
-    bu => tfe_project.bu_control[bu].id
+    bu => var.platform_stack_project_id
   }
 }
 
 output "bu_project_names_map" {
-  description = "Map of BU names to control project names"
+  description = "Map of BU names to Platform project name (all BU Stacks share Platform_Team project due to Stacks RBAC limitation)"
   value = {
     for bu, config in local.tenant : 
-    bu => tfe_project.bu_control[bu].name
+    bu => var.platform_stack_project
   }
 }
 
@@ -145,10 +145,10 @@ output "bu_infrastructure" {
   description = "Complete infrastructure mapping per BU (for Stacks publish_output)"
   value = {
     for bu, config in local.tenant : bu => {
-      # TFC Resources
+      # TFC Resources (NOTE: All BU Stacks share Platform project due to Stacks RBAC limitation)
       organization     = var.tfc_organization_name
-      project_id       = tfe_project.bu_control[bu].id
-      project_name     = tfe_project.bu_control[bu].name
+      project_id       = var.platform_stack_project_id  # Platform project, not BU-specific
+      project_name     = var.platform_stack_project     # Platform project name
       team_id          = tfe_team.bu_admin[bu].id
       variable_set_id  = tfe_variable_set.bu_admin[bu].id
       
@@ -183,7 +183,7 @@ output "deployment_summary" {
   description = "Summary of resources created"
   value = {
     business_units_count         = length(local.tenant)
-    bu_projects_count            = length(tfe_project.bu_control)
+    bu_projects_count            = 0  # BU control projects commented out due to Stacks RBAC limitation
     consumer_projects_count      = length(tfe_project.consumer)
     bu_teams_count               = length(tfe_team.bu_admin)
     bu_stacks_count              = var.create_hcp_stacks ? length(tfe_stack.bu_control) : 0

@@ -75,6 +75,11 @@ variable "platform_stack_project" {
   default     = "Platform_Team"
 }
 
+variable "platform_stack_project_id" {
+  type        = string
+  description = "HCP Terraform project ID where BU Stacks will be created (required due to Stacks RBAC limitation - publish_output only works within same project)"
+}
+
 # GitHub team and access configuration
 variable "github_team_privacy" {
   type        = string

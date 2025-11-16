@@ -23,37 +23,57 @@ resource "tfe_team_token" "bu_admin" {
 # ============================================================================
 # BU Control Projects
 # ============================================================================
+# 
+# TEMPORARILY COMMENTED OUT: Stacks RBAC limitation
+# Published outputs can only be consumed by Stacks in the SAME project.
+# Until cross-project upstream_input is supported, BU Stacks must reside
+# in the Platform_Team project to access published outputs.
+# 
+# Reference: https://developer.hashicorp.com/terraform/language/block/stack/tfdeploy/publish_output
+# "other Stacks in the same project can consume using upstream_input blocks"
+#
+# TODO: Uncomment when Stacks supports cross-project publish_output/upstream_input
 
-resource "tfe_project" "bu_control" {
-  for_each = local.tenant
+# resource "tfe_project" "bu_control" {
+#   for_each = local.tenant
 
-  name         = "BU_${each.key}"
-  organization = var.tfc_organization_name
-  description  = "Control project for ${each.key} business unit"
-}
+#   name         = "BU_${each.key}"
+#   organization = var.tfc_organization_name
+#   description  = "Control project for ${each.key} business unit"
+# }
 
 # ============================================================================
 # BU Admin Team Access to Control Projects
 # ============================================================================
+# 
+# TEMPORARILY COMMENTED OUT: See note above about BU Control Projects
 
-resource "tfe_team_project_access" "bu_control" {
-  for_each = local.tenant
+# resource "tfe_team_project_access" "bu_control" {
+#   for_each = local.tenant
 
-  access     = "admin"
-  project_id = tfe_project.bu_control[each.key].id
-  team_id    = tfe_team.bu_admin[each.key].id
-}
+#   access     = "admin"
+#   project_id = tfe_project.bu_control[each.key].id
+#   team_id    = tfe_team.bu_admin[each.key].id
+# }
 
 # ============================================================================
 # BU Control Stacks (replaces CLI workspaces)
 # ============================================================================
+# 
+# IMPORTANT: Due to Stacks RBAC limitations, BU Stacks are created in the
+# Platform_Team project (not BU-specific control projects). This allows
+# BU Stacks to consume published outputs from the Platform Stack via
+# upstream_input blocks.
+# 
+# Once Stacks supports cross-project publish_output/upstream_input, these
+# Stacks can be moved to BU-specific control projects.
 
 resource "tfe_stack" "bu_control" {
   for_each = var.create_hcp_stacks ? local.tenant : {}
 
   name        = "${each.key}-bu-stack"
   description = "BU Stack for ${each.key} workspace management - connected to ${var.bu_stack_repo_prefix}-${each.key}-${var.bu_stack_repo_suffix}"
-  project_id  = tfe_project.bu_control[each.key].id
+  project_id  = var.platform_stack_project_id  # Use Platform project, not BU control project
   
   # VCS connection to seeded GitHub repository
   vcs_repo {
@@ -108,12 +128,15 @@ resource "tfe_variable" "bu_projects" {
 }
 
 # ============================================================================
-# Associate Variable Sets with Control Projects
+# Associate Variable Sets with Platform Project
 # ============================================================================
+# 
+# TEMPORARILY MODIFIED: Variable sets associated with Platform project
+# instead of BU control projects (which are commented out)
 
 resource "tfe_project_variable_set" "bu_admin" {
   for_each = local.tenant
 
   variable_set_id = tfe_variable_set.bu_admin[each.key].id
-  project_id      = tfe_project.bu_control[each.key].id
+  project_id      = var.platform_stack_project_id  # Use Platform project
 }
