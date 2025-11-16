@@ -61,8 +61,7 @@ variable "vcs_oauth_token_id" {
   type        = string
   description = "OAuth token ID for VCS connection to GitHub. Required if create_hcp_stacks = true."
   default     = ""
-  ephemeral   = true  # Required for store values from Terraform Stacks
-  sensitive   = true  # Hide in logs
+  sensitive   = true  # Hide in logs (but NOT ephemeral - needed for vcs_repo block)
   
   validation {
     condition     = var.vcs_oauth_token_id == "" || can(regex("^ot-[a-zA-Z0-9]+$", var.vcs_oauth_token_id))
