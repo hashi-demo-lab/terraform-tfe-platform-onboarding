@@ -61,6 +61,11 @@ variable "vcs_oauth_token_id" {
   type        = string
   description = "OAuth token ID for VCS connection to GitHub. Required if create_hcp_stacks = true."
   default     = ""
+  
+  validation {
+    condition     = var.vcs_oauth_token_id == "" || can(regex("^ot-[a-zA-Z0-9]+$", var.vcs_oauth_token_id))
+    error_message = "OAuth token ID must be empty or match format 'ot-xxxxx'."
+  }
 }
 
 variable "platform_stack_project" {

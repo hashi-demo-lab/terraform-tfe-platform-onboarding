@@ -45,24 +45,27 @@ resource "tfe_team_project_access" "bu_control" {
 }
 
 # ============================================================================
-# BU Control Workspaces
+# BU Control Stacks (replaces CLI workspaces)
 # ============================================================================
 
-resource "tfe_workspace" "bu_control" {
-  for_each = local.tenant
+resource "tfe_stack" "bu_control" {
+  for_each = var.create_hcp_stacks ? local.tenant : {}
 
-  name               = "${each.key}_workspace_control"
-  organization       = var.tfc_organization_name
-  description        = "Control workspace for ${each.key} BU infrastructure management"
-  project_id         = tfe_project.bu_control[each.key].id
-  auto_apply         = false
-  allow_destroy_plan = false
+  name        = "${each.key}-bu-stack"
+  description = "BU Stack for ${each.key} workspace management - connected to ${var.bu_stack_repo_prefix}-${each.key}-${var.bu_stack_repo_suffix}"
+  project_id  = tfe_project.bu_control[each.key].id
   
-  lifecycle {
-    ignore_changes = [
-      vcs_repo, # May be configured via Stack VCS connection
-    ]
+  # VCS connection to seeded GitHub repository
+  vcs_repo {
+    identifier     = "${var.github_organization}/${var.bu_stack_repo_prefix}-${each.key}-${var.bu_stack_repo_suffix}"
+    branch         = "main"
+    oauth_token_id = var.vcs_oauth_token_id
   }
+  
+  depends_on = [
+    github_repository.bu_stack,
+    github_repository_file.bu_stack_files
+  ]
 }
 
 # ============================================================================

@@ -62,23 +62,31 @@ output "bu_admin_tokens" {
 }
 
 # ============================================================================
-# Workspace Outputs
+# Workspace/Stack Outputs
 # ============================================================================
 
-output "bu_control_workspace_ids_map" {
-  description = "Map of BU names to control workspace IDs"
-  value = {
-    for bu, ws in tfe_workspace.bu_control :
-    bu => ws.id
-  }
+output "bu_stack_ids_map" {
+  description = "Map of BU names to HCP Terraform Stack IDs (if created)"
+  value = var.create_hcp_stacks ? {
+    for bu, stack in tfe_stack.bu_control :
+    bu => stack.id
+  } : {}
 }
 
-output "bu_control_workspace_names_map" {
-  description = "Map of BU names to control workspace names"
-  value = {
-    for bu, ws in tfe_workspace.bu_control :
-    bu => ws.name
-  }
+output "bu_stack_names_map" {
+  description = "Map of BU names to HCP Terraform Stack names (if created)"
+  value = var.create_hcp_stacks ? {
+    for bu, stack in tfe_stack.bu_control :
+    bu => stack.name
+  } : {}
+}
+
+output "bu_stack_deployment_names" {
+  description = "Map of BU names to their Stack deployment names (populated after first run)"
+  value = var.create_hcp_stacks ? {
+    for bu, stack in tfe_stack.bu_control :
+    bu => stack.deployment_names
+  } : {}
 }
 
 # ============================================================================
@@ -142,9 +150,11 @@ output "bu_infrastructure" {
       project_id       = tfe_project.bu_control[bu].id
       project_name     = tfe_project.bu_control[bu].name
       team_id          = tfe_team.bu_admin[bu].id
-      workspace_id     = tfe_workspace.bu_control[bu].id
-      workspace_name   = tfe_workspace.bu_control[bu].name
       variable_set_id  = tfe_variable_set.bu_admin[bu].id
+      
+      # Stack or Workspace (depending on configuration)
+      stack_id         = var.create_hcp_stacks ? tfe_stack.bu_control[bu].id : null
+      stack_name       = var.create_hcp_stacks ? tfe_stack.bu_control[bu].name : null
       
       # GitHub Resources (if created)
       github_repo_name = var.create_bu_repositories ? github_repository.bu_stack[bu].name : null
@@ -174,7 +184,7 @@ output "deployment_summary" {
     bu_projects_count            = length(tfe_project.bu_control)
     consumer_projects_count      = length(tfe_project.consumer)
     bu_teams_count               = length(tfe_team.bu_admin)
-    bu_workspaces_count          = length(tfe_workspace.bu_control)
+    bu_stacks_count              = var.create_hcp_stacks ? length(tfe_stack.bu_control) : 0
     github_repos_created         = var.create_bu_repositories ? length(github_repository.bu_stack) : 0
     github_teams_created         = var.create_bu_repositories ? length(github_team.bu_admin) : 0
   }

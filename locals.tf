@@ -9,6 +9,9 @@ locals {
   # Extract business unit identifier
   config_business_unit = try(local.yaml_config.business_unit, null)
   
+  # Validation: Ensure OAuth token is provided when creating HCP Stacks
+  validate_oauth = var.create_hcp_stacks && var.vcs_oauth_token_id == "" ? tobool("ERROR: vcs_oauth_token_id is required when create_hcp_stacks = true") : true
+  
   # Create short BU prefix for project naming (max 40 char constraint)
   bu_short_prefix = local.config_business_unit != null ? {
     "platform-engineering"  = "plat-eng"

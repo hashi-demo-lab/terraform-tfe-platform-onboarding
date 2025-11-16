@@ -6,10 +6,10 @@ Terraform module for onboarding business units to HCP Terraform with **automated
 
 This module is designed for **platform teams** to provision HCP Terraform infrastructure for business units, including:
 
-- ✅ **BU Control Projects** - Dedicated projects per business unit (e.g., `plat-eng_kubernetes-platform`)
+- ✅ **BU Control Projects** - Dedicated projects per business unit (e.g., `BU_platform-engineering`)
 - ✅ **Admin Teams & Tokens** - Team-based access control with API tokens (e.g., `platform-engineering_admin`)
-- ✅ **Control Workspaces** - Workspace management infrastructure
-- ✅ **Variable Sets** - Centralized configuration management with project-specific variables
+- ✅ **HCP Terraform Stacks** - Creates VCS-connected Stacks in BU projects (NEW!)
+- ✅ **Variable Sets** - Centralized configuration management with project IDs and tokens
 - ✅ **Consumer Projects** - Application-specific projects from YAML configuration content
 - ✅ **Automated GitHub Repository Creation** - Creates turnkey BU Stack repositories with seeded configurations
 - ✅ **GitHub Teams & Access** - BU admin teams with repository permissions
@@ -23,8 +23,16 @@ This module is designed for **platform teams** to provision HCP Terraform infras
 - Creates BU-specific control projects with naming: `BU_{bu_name}` (e.g., `BU_platform-engineering`)
 - Creates admin teams: `{bu_name}_admin` (e.g., `platform-engineering_admin`)
 - Generates team tokens for BU authentication
-- Creates control workspaces: `{bu_name}_workspace_control`
+- **Creates HCP Terraform Stacks** connected to BU GitHub repositories (VCS-driven)
 - Provisions variable sets with project IDs and tokens
+
+### HCP Terraform Stacks (NEW!)
+- **Automatically creates Stacks** in each BU control project
+- **VCS-connected** to seeded GitHub repositories
+- **Auto-runs on commits** - BU teams edit YAML and push, Stack runs automatically
+- Stack naming: `{bu_name}-bu-stack` (e.g., `platform-engineering-bu-stack`)
+- Requires `vcs_oauth_token_id` for GitHub connection
+- Enable/disable with `create_hcp_stacks` flag (default: `false`)
 
 ### Consumer Projects (YAML-Driven)
 - Accepts YAML content via `yaml_config_content` variable (embedded in Stack deployments)
@@ -61,18 +69,18 @@ This module is designed for the **Terraform Stacks linked stacks pattern** with 
 graph TB
     subgraph PS["Platform Stack (Platform_Team)"]
         MOD[platform-onboarding module]
-        MOD --> D1[platform-engineering]
-        MOD --> D2[security-ops]
-        MOD --> D3[cloud-infrastructure]
+        MOD --> D1[deployment: platform-engineering]
+        MOD --> D2[deployment: security-ops]
+        MOD --> D3[deployment: cloud-infrastructure]
     end
     
-    D1 --> PE["Platform Engineering<br/>• Control Project<br/>• Admin Team<br/>• 3 Consumer Projects<br/>• GitHub Repo"]
-    D2 --> SO["Security Operations<br/>• Control Project<br/>• Admin Team<br/>• 4 Consumer Projects<br/>• GitHub Repo"]
-    D3 --> CI["Cloud Infrastructure<br/>• Control Project<br/>• Admin Team<br/>• 4 Consumer Projects<br/>• GitHub Repo"]
+    D1 --> PE["Platform Engineering<br/>• Control Project (BU_platform-engineering)<br/>• Admin Team & Token<br/>• Consumer Projects (3)<br/>• GitHub Repo Created<br/>• HCP Stack Created & VCS-Connected"]
+    D2 --> SO["Security Operations<br/>• Control Project (BU_security-ops)<br/>• Admin Team & Token<br/>• Consumer Projects (4)<br/>• GitHub Repo Created<br/>• HCP Stack Created & VCS-Connected"]
+    D3 --> CI["Cloud Infrastructure<br/>• Control Project (BU_cloud-infrastructure)<br/>• Admin Team & Token<br/>• Consumer Projects (4)<br/>• GitHub Repo Created<br/>• HCP Stack Created & VCS-Connected"]
     
-    PE -.publish_output.-> PE_BU[Platform Engineering<br/>BU Stack]
-    SO -.publish_output.-> SO_BU[Security Operations<br/>BU Stack]
-    CI -.publish_output.-> CI_BU[Cloud Infrastructure<br/>BU Stack]
+    PE -.publish_output<br/>project_id, stack_id.-> PE_BU["Platform Engineering BU Stack<br/>(VCS-connected to GitHub)<br/>• Runs on commits<br/>• Creates workspaces"]
+    SO -.publish_output<br/>project_id, stack_id.-> SO_BU["Security Operations BU Stack<br/>(VCS-connected to GitHub)<br/>• Runs on commits<br/>• Creates workspaces"]
+    CI -.publish_output<br/>project_id, stack_id.-> CI_BU["Cloud Infrastructure BU Stack<br/>(VCS-connected to GitHub)<br/>• Runs on commits<br/>• Creates workspaces"]
     
     style PS fill:#7B42BC,color:#fff
     style PE fill:#60A5FA,color:#000
@@ -214,6 +222,10 @@ deployment "platform-engineering" {
     github_organization      = "hashi-demo-lab"
     github_token             = store.varset.platform_team_config.github_token
     
+    # HCP Terraform Stacks (NEW!)
+    create_hcp_stacks  = true
+    vcs_oauth_token_id = store.varset.platform_team_config.vcs_oauth_token_id  # Format: ot-xxxxx
+    
     # Repository naming
     bu_stack_repo_prefix     = "tfc"
     bu_stack_repo_suffix     = "bu-stack"
@@ -251,9 +263,9 @@ component "platform_onboarding" {
     bu_stack_repo_prefix   = var.bu_stack_repo_prefix
     bu_stack_repo_suffix   = var.bu_stack_repo_suffix
     
-    # HCP Terraform Stacks (managed separately)
-    create_hcp_stacks  = false
-    vcs_oauth_token_id = ""
+    # HCP Terraform Stacks (NEW!)
+    create_hcp_stacks  = var.create_hcp_stacks
+    vcs_oauth_token_id = var.vcs_oauth_token_id  # Required when create_hcp_stacks = true
     
     # Platform Configuration
     platform_stack_project = var.platform_project_name
@@ -383,13 +395,16 @@ provider "github" "this" {
 | bu_stack_template_repo | Template repo (format: org/repo) | `string` | `""` | no |
 | bu_stack_repo_prefix | Repository name prefix | `string` | `"tfc"` | no |
 | bu_stack_repo_suffix | Repository name suffix | `string` | `"bu-stack"` | no |
-| create_hcp_stacks | Create HCP Terraform Stacks | `bool` | `false` | no |
-| vcs_oauth_token_id | VCS OAuth token ID | `string` | `""` | no |
+| **create_hcp_stacks** | **Create HCP Terraform Stacks connected to GitHub repos (NEW!)** | `bool` | `false` | no |
+| **vcs_oauth_token_id** | **VCS OAuth token ID for Stack-GitHub connection (format: `ot-xxxxx`). Required when `create_hcp_stacks = true`** | `string` | `""` | **conditional*** |
 | platform_stack_project | Platform stack project name | `string` | `"Platform_Team"` | no |
 | github_team_privacy | GitHub team privacy (closed/secret) | `string` | `"closed"` | no |
 | enable_branch_protection | Enable branch protection on main | `bool` | `true` | no |
 | commit_author_name | Git commit author name | `string` | `"Platform Team"` | no |
 | commit_author_email | Git commit author email | `string` | `"platform-team@cloudbrokeraz.com"` | no |
+
+**\* Conditional Requirements:**
+- `vcs_oauth_token_id`: Required when `create_hcp_stacks = true`. Must match format `ot-xxxxx`. Get from HCP Terraform → Organization Settings → Version Control → Providers.
 
 ## Outputs
 
@@ -398,22 +413,42 @@ provider "github" "this" {
 |------|-------------|
 | organization_name | HCP Terraform organization name |
 | business_units | List of business units |
-| deployment_summary | Resource creation summary |
+| deployment_summary | Resource creation summary (includes `bu_stacks_count` when enabled) |
 
 ### BU Infrastructure Outputs (for publish_output)
 | Name | Description |
 |------|-------------|
-| bu_project_ids_map | Map of BU names to project IDs |
-| bu_admin_tokens | Map of BU names to admin tokens (sensitive) |
-| bu_infrastructure | Complete structured output per BU |
+| bu_project_ids_map | Map of BU names to control project IDs |
+| bu_admin_tokens | Map of BU names to admin team tokens (sensitive) |
+| bu_infrastructure | Complete structured output per BU (includes `stack_id` and `stack_name` when Stacks enabled) |
+
+### HCP Terraform Stack Outputs (NEW!)
+| Name | Description |
+|------|-------------|
+| **bu_stack_ids_map** | Map of BU names to Stack IDs (format: `stack-xxxxx`) |
+| **bu_stack_names_map** | Map of BU names to Stack names (format: `{bu_name}-bu-stack`) |
+| **bu_stack_deployment_names** | Map of Stack deployment names (populated after first successful run) |
 
 ### GitHub Outputs
 | Name | Description |
 |------|-------------|
 | bu_stack_repo_names | Map of BU names to repo names |
-| bu_stack_repo_urls | Map of BU names to repo URLs |
+| bu_stack_repo_urls | Map of BU names to repo HTTPS URLs |
 | bu_stack_clone_urls | Map of BU names to SSH clone URLs |
 | bu_github_team_ids | Map of BU names to GitHub team IDs |
+
+**Example Stack outputs**:
+```hcl
+bu_stack_ids_map = {
+  "platform-engineering" = "stack-abc123xyz"
+  "security-ops"         = "stack-def456uvw"
+}
+
+bu_stack_names_map = {
+  "platform-engineering" = "platform-engineering-bu-stack"
+  "security-ops"         = "security-ops-bu-stack"
+}
+```
 
 ## GitHub Repository Naming
 
@@ -579,6 +614,40 @@ bu_abbreviations = {
 ### "Failed to read YAML file"
 **Cause**: YAML syntax error in content  
 **Fix**: Validate YAML with online validator or `yamllint`
+
+### "vcs_oauth_token_id is required when create_hcp_stacks = true"
+**Cause**: Attempting to create HCP Stacks without OAuth token  
+**Fix**: 
+1. Get OAuth token ID from HCP Terraform: Organization Settings → Version Control → Providers
+2. Token format must be `ot-xxxxx`
+3. Pass via `vcs_oauth_token_id` input variable
+```hcl
+deployment "platform-engineering" {
+  inputs = {
+    create_hcp_stacks  = true
+    vcs_oauth_token_id = store.varset.platform_team_config.vcs_oauth_token_id
+  }
+}
+```
+
+### "OAuth token ID must be empty or match format 'ot-xxxxx'"
+**Cause**: Invalid OAuth token format  
+**Fix**: Ensure token ID starts with `ot-` followed by alphanumeric characters (e.g., `ot-abc123xyz`)
+
+### "Stack not auto-running after GitHub commit"
+**Cause**: VCS connection not properly configured  
+**Fix**: 
+1. Verify OAuth token has correct permissions
+2. Check GitHub webhook exists (Settings → Webhooks)
+3. Verify Stack VCS connection: HCP Terraform → Stack → Settings → Version Control
+4. Ensure commits pushed to `main` branch (default)
+
+### "Cannot find Stack outputs (bu_stack_ids_map is empty)"
+**Cause**: `create_hcp_stacks = false` or no Stacks created yet  
+**Fix**: 
+1. Set `create_hcp_stacks = true` in deployment
+2. Apply the Platform Stack
+3. Check `bu_stack_ids_map` output after successful apply
 
 ## Related Resources
 
