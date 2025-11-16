@@ -9,6 +9,16 @@ locals {
   # Extract business unit identifier
   config_business_unit = try(local.yaml_config.business_unit, null)
   
+  # Create short BU prefix for project naming (max 40 char constraint)
+  bu_short_prefix = local.config_business_unit != null ? {
+    "platform-engineering"  = "plat-eng"
+    "security-ops"          = "sec-ops"
+    "cloud-infrastructure"  = "cloud-infra"
+    "finance"               = "finance"
+    "engineering"           = "engineering"
+    "sales"                 = "sales"
+  }[local.config_business_unit] : null
+  
   # Filter based on business_unit variable (if specified)
   process_this_config = var.business_unit == null || local.config_business_unit == var.business_unit
   
@@ -19,9 +29,12 @@ locals {
   bu_projects = {
     for idx, project in local.bu_projects_raw :
     "${local.config_business_unit}_${project.project_name}" => merge(project, {
-      bu           = local.config_business_unit
-      project_key  = project.project_name
-      full_key     = "${local.config_business_unit}_${project.project_name}"
+      bu              = local.config_business_unit
+      bu_short        = local.bu_short_prefix
+      project_key     = project.project_name
+      full_key        = "${local.config_business_unit}_${project.project_name}"
+      # Shortened name for TFC project (max 40 chars)
+      project_name_short = "${local.bu_short_prefix}_${project.project_name}"
     })
   }
   

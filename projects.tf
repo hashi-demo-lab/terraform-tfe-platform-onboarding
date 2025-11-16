@@ -5,7 +5,10 @@
 resource "tfe_project" "consumer" {
   for_each = local.bu_projects
 
-  name         = "BU_${each.value.bu}_${each.value.project_key}"
+  # Use shortened name to stay within 40 character limit
+  # Format: {bu_short}_{project_name}
+  # Example: plat-eng_kubernetes-platform (30 chars)
+  name         = each.value.project_name_short
   organization = var.tfc_organization_name
   description  = try(each.value.project_description, "${each.value.bu} ${each.value.project_key} project")
 }
