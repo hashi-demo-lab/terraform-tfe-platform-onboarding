@@ -12,7 +12,7 @@ identity_token "tfe" {
 
 upstream_input "platform_stack" {
   type   = "stack"
-  source = "app.terraform.io/${organization}/${platform_project}/platform-stack"
+  source = "app.terraform.io/${organization}/${platform_project}/tfc-platform-stack"
 }
 
 # ============================================================================
@@ -20,8 +20,10 @@ upstream_input "platform_stack" {
 # ============================================================================
 
 locals {
-  # Extract BU-specific infrastructure from platform stack
-  bu_infrastructure = upstream_input.platform_stack.bu_infrastructure["${bu_name}"]
+  # Embedded YAML configuration content
+  ${business_unit}_yaml = <<-EOT
+${yaml_config}
+  EOT
 }
 
 # ============================================================================
@@ -34,19 +36,17 @@ deployment "dev" {
     tfc_organization_name = "${organization}"
     
     # Upstream inputs from platform stack
-    bu_project_id   = local.bu_infrastructure.project_id
-    bu_admin_token  = upstream_input.platform_stack.bu_admin_tokens["${bu_name}"]
+    bu_project_id   = upstream_input.platform_stack.bu_infrastructure_${business_unit}["${business_unit}"].project_id
+    bu_admin_token  = upstream_input.platform_stack.bu_admin_tokens_${business_unit}["${business_unit}"]
     
-    # OIDC authentication
-    tfe_identity_token = identity_token.tfe.jwt
+    # YAML configuration
+    yaml_config_content = local.${business_unit}_yaml
     
-    # VCS integration (requires GitHub token)
-    # NOTE: Configure github_token in HCP Terraform variable set
-    github_token       = "" # Provided via variable set
-    vcs_oauth_token_id = "" # Provided via variable set
+    # VCS integration
+    vcs_oauth_token_id = var.vcs_oauth_token_id
     
     # BU context
-    business_unit = "${bu_name}"
+    business_unit = "${business_unit}"
     environment   = "dev"
   }
 }
@@ -57,18 +57,17 @@ deployment "staging" {
     tfc_organization_name = "${organization}"
     
     # Upstream inputs from platform stack
-    bu_project_id   = local.bu_infrastructure.project_id
-    bu_admin_token  = upstream_input.platform_stack.bu_admin_tokens["${bu_name}"]
+    bu_project_id   = upstream_input.platform_stack.bu_infrastructure_${business_unit}["${business_unit}"].project_id
+    bu_admin_token  = upstream_input.platform_stack.bu_admin_tokens_${business_unit}["${business_unit}"]
     
-    # OIDC authentication
-    tfe_identity_token = identity_token.tfe.jwt
+    # YAML configuration
+    yaml_config_content = local.${business_unit}_yaml
     
     # VCS integration
-    github_token       = "" # Provided via variable set
-    vcs_oauth_token_id = "" # Provided via variable set
+    vcs_oauth_token_id = var.vcs_oauth_token_id
     
     # BU context
-    business_unit = "${bu_name}"
+    business_unit = "${business_unit}"
     environment   = "staging"
   }
 }
@@ -79,18 +78,17 @@ deployment "production" {
     tfc_organization_name = "${organization}"
     
     # Upstream inputs from platform stack
-    bu_project_id   = local.bu_infrastructure.project_id
-    bu_admin_token  = upstream_input.platform_stack.bu_admin_tokens["${bu_name}"]
+    bu_project_id   = upstream_input.platform_stack.bu_infrastructure_${business_unit}["${business_unit}"].project_id
+    bu_admin_token  = upstream_input.platform_stack.bu_admin_tokens_${business_unit}["${business_unit}"]
     
-    # OIDC authentication
-    tfe_identity_token = identity_token.tfe.jwt
+    # YAML configuration
+    yaml_config_content = local.${business_unit}_yaml
     
     # VCS integration
-    github_token       = "" # Provided via variable set
-    vcs_oauth_token_id = "" # Provided via variable set
+    vcs_oauth_token_id = var.vcs_oauth_token_id
     
     # BU context
-    business_unit = "${bu_name}"
+    business_unit = "${business_unit}"
     environment   = "production"
   }
 }

@@ -82,10 +82,10 @@ resource "tfe_stack" "bu_control" {
     oauth_token_id = var.vcs_oauth_token_id
   }
   
-  # Stack depends on GitHub repo being created (if enabled)
-  # Note: Individual file resources not needed in depends_on since they depend on github_repository
+  # Stack depends on GitHub repo and all seeded files being created
   depends_on = [
-    github_repository.bu_stack
+    github_repository.bu_stack,
+    github_repository_file.terraform_lock
   ]
 }
 

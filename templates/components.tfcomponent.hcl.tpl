@@ -3,16 +3,16 @@
 # ============================================================================
 
 component "bu_onboarding" {
-  source = "app.terraform.io/${organization}/bu-onboarding/tfe"
-  
-  # Module will be published to Private Module Registry
-  # Version constraint will be added once module is published
-  # version = "~> 1.0"
+  source  = "app.terraform.io/${organization}/bu-onboarding/tfe"
+  version = "1.0.1"
   
   inputs = {
     # Organization and project
     tfc_organization_name = var.tfc_organization_name
     bu_project_id         = var.bu_project_id
+    
+    # YAML Configuration
+    yaml_config_content = var.yaml_config_content
     
     # Business unit filter
     business_unit = var.business_unit

@@ -38,10 +38,15 @@ variable "vcs_oauth_token_id" {
   description = "HCP Terraform VCS OAuth token ID for GitHub integration"
 }
 
+variable "yaml_config_content" {
+  type        = string
+  description = "YAML configuration content for workspace definitions"
+}
+
 variable "business_unit" {
   type        = string
   description = "Business unit name"
-  default     = "${bu_name}"
+  default     = "${business_unit}"
 }
 
 variable "environment" {

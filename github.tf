@@ -183,10 +183,12 @@ resource "github_repository_file" "deployments" {
   branch              = "main"
   file                = "deployments.tfdeploy.hcl"
   content             = templatefile("${path.module}/templates/deployments.tfdeploy.hcl.tpl", {
-    bu_name          = each.key
+    business_unit    = each.key
     organization     = var.tfc_organization_name
     platform_project = var.platform_stack_project
-    oidc_audience    = "${each.key}-team-*"
+    yaml_config      = templatefile("${path.module}/templates/bu-config.yaml.tpl", {
+      bu_name = each.key
+    })
   })
   commit_message      = "Add Stack deployments configuration"
   commit_author       = var.commit_author_name
@@ -235,6 +237,20 @@ resource "github_repository_file" "terraform_version" {
   file                = ".terraform-version"
   content             = file("${path.module}/templates/.terraform-version.tpl")
   commit_message      = "Add Terraform version specification"
+  commit_author       = var.commit_author_name
+  commit_email        = var.commit_author_email
+  overwrite_on_create = true
+}
+
+# .terraform.lock.hcl file
+resource "github_repository_file" "terraform_lock" {
+  for_each = var.create_bu_repositories ? local.tenant : {}
+
+  repository          = github_repository.bu_stack[each.key].name
+  branch              = "main"
+  file                = ".terraform.lock.hcl"
+  content             = templatefile("${path.module}/templates/.terraform.lock.hcl.tpl", {})
+  commit_message      = "Add Terraform provider lock file"
   commit_author       = var.commit_author_name
   commit_email        = var.commit_author_email
   overwrite_on_create = true
