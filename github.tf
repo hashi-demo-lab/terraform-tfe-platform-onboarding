@@ -119,7 +119,7 @@ resource "github_repository_file" "variables" {
   branch              = "main"
   file                = "variables.tfcomponent.hcl"
   content             = templatefile("${path.module}/templates/variables.tfcomponent.hcl.tpl", {
-    bu_name = each.key
+    business_unit = each.key
   })
   commit_message      = "Add Stack variables configuration"
   commit_author       = var.commit_author_name
@@ -186,6 +186,7 @@ resource "github_repository_file" "deployments" {
     business_unit    = each.key
     organization     = var.tfc_organization_name
     platform_project = var.platform_stack_project
+    oidc_audience    = "${each.key}-team-*"
     yaml_config      = templatefile("${path.module}/templates/bu-config.yaml.tpl", {
       bu_name = each.key
     })
