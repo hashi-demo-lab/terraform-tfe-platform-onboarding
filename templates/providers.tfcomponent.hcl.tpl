@@ -10,14 +10,14 @@ required_providers {
 }
 
 # ============================================================================
-# TFE Provider Configuration with OIDC
+# TFE Provider Configuration with Team Token
 # ============================================================================
 
 provider "tfe" "this" {
   config {
     hostname = "app.terraform.io"
     
-    # OIDC Authentication
-    token = var.tfe_identity_token
+    # BU Admin Team Token Authentication
+    token = var.bu_admin_token
   }
 }
