@@ -43,7 +43,7 @@ deployment "dev" {
     yaml_config_content = local.${business_unit}_yaml
     
     # VCS integration
-    vcs_oauth_token_id = var.vcs_oauth_token_id
+    vcs_oauth_token_id = "${vcs_oauth_token_id}"
     
     # BU context
     business_unit = "${business_unit}"
@@ -64,7 +64,7 @@ deployment "staging" {
     yaml_config_content = local.${business_unit}_yaml
     
     # VCS integration
-    vcs_oauth_token_id = var.vcs_oauth_token_id
+    vcs_oauth_token_id = "${vcs_oauth_token_id}"
     
     # BU context
     business_unit = "${business_unit}"
@@ -85,7 +85,7 @@ deployment "production" {
     yaml_config_content = local.${business_unit}_yaml
     
     # VCS integration
-    vcs_oauth_token_id = var.vcs_oauth_token_id
+    vcs_oauth_token_id = "${vcs_oauth_token_id}"
     
     # BU context
     business_unit = "${business_unit}"

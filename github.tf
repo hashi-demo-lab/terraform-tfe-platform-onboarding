@@ -183,11 +183,12 @@ resource "github_repository_file" "deployments" {
   branch              = "main"
   file                = "deployments.tfdeploy.hcl"
   content             = templatefile("${path.module}/templates/deployments.tfdeploy.hcl.tpl", {
-    business_unit    = each.key
-    organization     = var.tfc_organization_name
-    platform_project = var.platform_stack_project
-    oidc_audience    = "${each.key}-team-*"
-    yaml_config      = templatefile("${path.module}/templates/bu-config.yaml.tpl", {
+    business_unit       = each.key
+    organization        = var.tfc_organization_name
+    platform_project    = var.platform_stack_project
+    oidc_audience       = "${each.key}-team-*"
+    vcs_oauth_token_id  = var.vcs_oauth_token_id
+    yaml_config         = templatefile("${path.module}/templates/bu-config.yaml.tpl", {
       bu_name = each.key
     })
   })
