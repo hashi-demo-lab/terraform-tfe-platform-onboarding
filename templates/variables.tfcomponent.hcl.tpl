@@ -19,20 +19,6 @@ variable "bu_admin_token" {
   sensitive   = true
 }
 
-variable "tfe_identity_token" {
-  type        = string
-  description = "OIDC identity token for TFE provider authentication"
-  ephemeral   = true
-  sensitive   = true
-}
-
-variable "github_token" {
-  type        = string
-  description = "GitHub token for VCS integration"
-  ephemeral   = true
-  sensitive   = true
-}
-
 variable "vcs_oauth_token_id" {
   type        = string
   description = "HCP Terraform VCS OAuth token ID for GitHub integration"
