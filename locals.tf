@@ -14,12 +14,10 @@ locals {
   
   # Create short BU prefix for project naming (max 40 char constraint)
   bu_short_prefix = local.config_business_unit != null ? {
-    "platform-engineering"  = "plat-eng"
-    "security-ops"          = "sec-ops"
-    "cloud-infrastructure"  = "cloud-infra"
-    "finance"               = "finance"
-    "engineering"           = "engineering"
-    "sales"                 = "sales"
+    "platform-engineering"      = "plat-eng"
+    "security-ops"              = "sec-ops"
+    "cloud-infrastructure"      = "cloud-infra"
+    "infrastructure-operations" = "it-ops"
   }[local.config_business_unit] : null
   
   # Filter based on business_unit variable (if specified)
